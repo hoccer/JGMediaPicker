@@ -228,7 +228,13 @@ static NSString *SongCellIdentifier = @"SongCell";
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:[self cellIdentifierForQueryType:self.queryType] forIndexPath:indexPath];
-    
+
+    [self configureCell: cell forIndexPath: indexPath];
+
+    return cell;
+}
+
+- (void) configureCell: (UITableViewCell*) cell forIndexPath: (NSIndexPath*) indexPath {
     NSInteger itemIndex = indexPath.row;
 
     cell.selectionStyle = UITableViewCellSelectionStyleNone;
@@ -317,8 +323,6 @@ static NSString *SongCellIdentifier = @"SongCell";
         default:
             break;
     }
-    
-    return cell;
 }
 
 #pragma mark - Table view delegate
@@ -409,6 +413,12 @@ static NSString *SongCellIdentifier = @"SongCell";
                 if([self.delegate respondsToSelector:@selector(jgMediaQueryViewController:didPickMediaItems:selectedItem:)]) {
                     [self.delegate jgMediaQueryViewController:self didPickMediaItems:mediaItemCollection selectedItem:selectedMediaItem];
                 }
+            }
+            UITableViewCell * cell = [self.itemTableView cellForRowAtIndexPath: indexPath];
+            if (cell) {
+                [self.itemTableView beginUpdates];
+                [self configureCell: cell forIndexPath: indexPath];
+                [self.itemTableView endUpdates];
             }
         }break;
 
