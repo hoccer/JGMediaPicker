@@ -36,4 +36,8 @@ typedef enum {
 - (void)jgMediaQueryViewController:(JGMediaQueryViewController *)mediaQueryViewController didPickMediaItems:(MPMediaItemCollection *)mediaItemCollection selectedItem:(MPMediaItem *)selectedItem;
 - (void)jgMediaQueryViewControllerDidCancel:(JGMediaQueryViewController *)mediaPicker;
 
+
+- (BOOL)jgMediaQueryViewController:(JGMediaQueryViewController *)mediaPicker isItemSelected: (MPMediaItem*) item;
+- (void)jgMediaQueryViewController:(JGMediaQueryViewController *)mediaPicker deselectItem: (MPMediaItem*) item;
+
 @end

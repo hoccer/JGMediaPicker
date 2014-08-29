@@ -130,12 +130,6 @@ static NSString *SongCellIdentifier = @"SongCell";
     }
 }
 
-- (void)notifyDelegateOfSelection:(MPMediaItemCollection *)mediaItems selectedItem:(MPMediaItem *)selectedItem {
-    if([self.delegate respondsToSelector:@selector(jgMediaQueryViewController:didPickMediaItems:selectedItem:)]) {
-        [self.delegate jgMediaQueryViewController:self didPickMediaItems:mediaItems selectedItem:selectedItem];
-    }
-}
-
 - (void)notifyDelegateOfCancellation {
     if([self.delegate respondsToSelector:@selector(jgMediaQueryViewControllerDidCancel:)]) {
         [self.delegate jgMediaQueryViewControllerDidCancel:self];
@@ -236,22 +230,25 @@ static NSString *SongCellIdentifier = @"SongCell";
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:[self cellIdentifierForQueryType:self.queryType] forIndexPath:indexPath];
     
     NSInteger itemIndex = indexPath.row;
+
+    cell.selectionStyle = UITableViewCellSelectionStyleNone;
+
+
     if(self.itemSections.count) {
         cell.accessoryType = UITableViewCellAccessoryNone;
         MPMediaQuerySection *querySection = [[self itemSections] objectAtIndex:indexPath.section];
         itemIndex = querySection.range.location + indexPath.row;        
-    }
-    else if(self.queryType == JGMediaQueryTypeSongs) {
-        cell.accessoryType = UITableViewCellAccessoryNone;
-    }
-    else {
+    } else {
         cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
     }
 
-    
     MPMediaItemCollection *mediaItemCollection = [[self items] objectAtIndex:itemIndex];
     MPMediaItem *mediaItem = [mediaItemCollection representativeItem];
-    
+
+    if(self.queryType == JGMediaQueryTypeSongs) {
+        cell.accessoryType = [self.delegate jgMediaQueryViewController: self isItemSelected: mediaItem] ? UITableViewCellAccessoryCheckmark : UITableViewCellAccessoryNone;
+    }
+
     switch (self.queryType) {
             
         case JGMediaQueryTypePlaylists: {
@@ -396,20 +393,26 @@ static NSString *SongCellIdentifier = @"SongCell";
         }break;
             
         case JGMediaQueryTypeSongs: {
-            if([self.delegate respondsToSelector:@selector(jgMediaQueryViewController:didPickMediaItems:selectedItem:)]) {
-                MPMediaItemCollection *selectedMediaItemCollection = [[self items] objectAtIndex:itemIndex];
-                MPMediaItem *selectedMediaItem = [selectedMediaItemCollection representativeItem];
+            MPMediaItemCollection *selectedMediaItemCollection = [[self items] objectAtIndex:itemIndex];
+            MPMediaItem *selectedMediaItem = [selectedMediaItemCollection representativeItem];
 
-                NSMutableArray *songsArray = [NSMutableArray arrayWithCapacity:selectedMediaItemCollection.count];
-                for (MPMediaItemCollection *mediaItemCollection in [self items]) {
-                    [songsArray addObject:[mediaItemCollection representativeItem]];
+            NSMutableArray *songsArray = [NSMutableArray arrayWithCapacity:selectedMediaItemCollection.count];
+            for (MPMediaItemCollection *mediaItemCollection in [self items]) {
+                [songsArray addObject:[mediaItemCollection representativeItem]];
+            }
+            MPMediaItemCollection *mediaItemCollection = [MPMediaItemCollection collectionWithItems:songsArray];
+            if([self.delegate respondsToSelector:@selector(jgMediaQueryViewController:isItemSelected:)] && [self.delegate jgMediaQueryViewController:self isItemSelected: selectedMediaItem]) {
+                if([self.delegate respondsToSelector:@selector(jgMediaQueryViewController:deselectItem:)]) {
+                    [self.delegate jgMediaQueryViewController: self deselectItem: selectedMediaItem];
                 }
-                MPMediaItemCollection *mediaItemCollection = [MPMediaItemCollection collectionWithItems:songsArray];
-                [self.delegate jgMediaQueryViewController:self didPickMediaItems:mediaItemCollection selectedItem:selectedMediaItem];
+            } else {
+                if([self.delegate respondsToSelector:@selector(jgMediaQueryViewController:didPickMediaItems:selectedItem:)]) {
+                    [self.delegate jgMediaQueryViewController:self didPickMediaItems:mediaItemCollection selectedItem:selectedMediaItem];
+                }
             }
         }break;
-            
-        case JGMediaQueryTypeAlbums:    
+
+        case JGMediaQueryTypeAlbums:
         case JGMediaQueryTypeAlbumArtist: {            
             JGAlbumViewController *albumViewController = [[JGAlbumViewController alloc] initWithNibName:@"JGAlbumViewController" bundle:nil];
             albumViewController.showsCancelButton = YES;
@@ -430,6 +433,15 @@ static NSString *SongCellIdentifier = @"SongCell";
      
 }
 
+
+- (void)notifyDelegateOfSelection:(MPMediaItemCollection *)mediaItems selectedItem:(MPMediaItem *)selectedItem {
+
+    if([self.delegate respondsToSelector:@selector(jgMediaQueryViewController:didPickMediaItems:selectedItem:)]) {
+        [self.delegate jgMediaQueryViewController:self didPickMediaItems:mediaItems selectedItem:selectedItem];
+    }
+}
+
+
 #pragma mark - jgMediaQueryViewControllerDelegate callbacks
 - (void)jgMediaQueryViewController:(JGMediaQueryViewController *)mediaQueryViewController didPickMediaItems:(MPMediaItemCollection *)mediaItemCollection selectedItem:(MPMediaItem *)selectedItem {
     if([self.delegate respondsToSelector:@selector(jgMediaQueryViewController:didPickMediaItems:selectedItem:)]) {
@@ -440,6 +452,19 @@ static NSString *SongCellIdentifier = @"SongCell";
 - (void)jgMediaQueryViewControllerDidCancel:(JGMediaQueryViewController *)mediaPicker {
     if([self.delegate respondsToSelector:@selector(jgMediaQueryViewControllerDidCancel:)]) {
         [self.delegate jgMediaQueryViewControllerDidCancel:self];
+    }
+}
+
+- (BOOL)jgMediaQueryViewController:(JGMediaQueryViewController *)mediaPicker isItemSelected: (MPMediaItem*) item {
+    if ([self.delegate respondsToSelector: @selector(jgMediaQueryViewController:isItemSelected:)]) {
+        return [self.delegate jgMediaQueryViewController: self isItemSelected: item];
+    }
+    return NO;
+}
+
+- (void)jgMediaQueryViewController:(JGMediaQueryViewController *)mediaPicker deselectItem: (MPMediaItem*) item {
+    if ([self.delegate respondsToSelector: @selector(jgMediaQueryViewController:deselectItem:)]) {
+        [self.delegate jgMediaQueryViewController: self deselectItem: item];
     }
 }
 
