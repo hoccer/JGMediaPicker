@@ -15,6 +15,8 @@
 #import "MPMediaItemCollection+JGExtensions.h"
 #import "JGAlbumTrackTableViewCell.h"
 
+#import "JGMediaQueryViewController.h"
+
 @interface JGAlbumViewController ()
 
 - (void)updateUI;
@@ -142,7 +144,12 @@
         cell = self.albumTrackTableViewCell;
         self.albumTrackTableViewCell = nil;
     }
-    
+    [self configureCell: cell indexPath: indexPath];
+    return cell;
+}
+
+- (void) configureCell: (JGAlbumTrackTableViewCell*) cell indexPath: (NSIndexPath*) indexPath {
+
     MPMediaItem *mediaItem = [[[self albumCollection] items] objectAtIndex:indexPath.row];
     cell.trackNumberLabel.text = [NSString stringWithFormat:@"%d",[[mediaItem jg_trackNumber] intValue]];
     cell.trackNameLabel.text = [mediaItem jg_title];
@@ -154,15 +161,32 @@
     //make odd rows gray    
     cell.backgroundView.backgroundColor = indexPath.row % 2 != 0 ? kGrayBackgroundColor : [UIColor whiteColor];
 
-    return cell;
+    cell.accessoryType = UITableViewCellAccessoryNone;
+    if ([self.delegate respondsToSelector: @selector(jgMediaQueryViewController:isItemSelected:)]) {
+        cell.accessoryType = [self.delegate jgMediaQueryViewController: nil/*self*/ isItemSelected: mediaItem] ? UITableViewCellAccessoryCheckmark : UITableViewCellAccessoryNone;
+    }
+
+    cell.selectionStyle = UITableViewCellSelectionStyleNone;
 }
 
 #pragma mark - Table view delegate
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     MPMediaItem *selectedItem = [self.albumCollection.items objectAtIndex:indexPath.row];
-    if([self.delegate respondsToSelector:@selector(jgAlbumViewController:didPickMediaItems:selectedItem:)]) {
-        [self.delegate jgAlbumViewController:self didPickMediaItems:self.albumCollection selectedItem:selectedItem];
+    if([self.delegate respondsToSelector:@selector(jgMediaQueryViewController:isItemSelected:)] && [self.delegate jgMediaQueryViewController:nil/*self*/ isItemSelected: selectedItem]) {
+        if([self.delegate respondsToSelector:@selector(jgMediaQueryViewController:deselectItem:)]) {
+            [self.delegate jgMediaQueryViewController: nil/*self*/ deselectItem: selectedItem];
+        }
+    } else {
+        if([self.delegate respondsToSelector:@selector(jgMediaQueryViewController:didPickMediaItems:selectedItem:)]) {
+            [self.delegate jgMediaQueryViewController: nil/*self*/ didPickMediaItems:self.albumCollection selectedItem:selectedItem];
+        }
+    }
+    JGAlbumTrackTableViewCell * cell = (JGAlbumTrackTableViewCell*)[self.tableView cellForRowAtIndexPath: indexPath];
+    if (cell) {
+        [self.tableView beginUpdates];
+        [self configureCell: cell indexPath: indexPath];
+        [self.tableView endUpdates];
     }
 }
 
