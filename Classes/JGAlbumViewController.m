@@ -205,4 +205,9 @@
 - (NSArray*) selectedItems {
     return [self.delegate selectedItems];
 }
+
+- (NSArray*) toolbarItems {
+    return [self.delegate toolbarItems];
+}
+
 @end

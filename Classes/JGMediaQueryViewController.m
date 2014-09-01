@@ -501,6 +501,10 @@ static NSString *SongCellIdentifier = @"SongCell";
     }
 }
 
+- (NSArray*) toolbarItems {
+    return [self.delegate toolbarItems];
+}
+
 #pragma mark - JGAlbumViewControllerDelegate callback
 - (void)jgAlbumViewController:(JGAlbumViewController *)albumViewController didPickMediaItems:(MPMediaItemCollection *)mediaItemCollection selectedItem:(MPMediaItem *)selectedItem {
     [self notifyDelegateOfSelection:mediaItemCollection selectedItem:selectedItem];
