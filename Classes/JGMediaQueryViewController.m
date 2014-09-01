@@ -140,6 +140,10 @@ static NSString *SongCellIdentifier = @"SongCell";
     [self notifyDelegateOfCancellation];
 }
 
+- (void) doneButtonTap: (id) sender {
+    NSLog(@"I'm done.");
+}
+
 - (void)mediaLibraryDidChange:(NSNotification *)notification {
     [self updateItems];
 }
@@ -254,7 +258,7 @@ static NSString *SongCellIdentifier = @"SongCell";
     if(self.queryType == JGMediaQueryTypeSongs) {
         cell.accessoryType = [self.delegate jgMediaQueryViewController: self isItemSelected: mediaItem] ? UITableViewCellAccessoryCheckmark : UITableViewCellAccessoryNone;
     }
-
+    
     switch (self.queryType) {
             
         case JGMediaQueryTypePlaylists: {
@@ -419,6 +423,7 @@ static NSString *SongCellIdentifier = @"SongCell";
                 [self configureCell: cell forIndexPath: indexPath];
                 [self.itemTableView endUpdates];
             }
+            [self updateDoneButton];
         }break;
 
         case JGMediaQueryTypeAlbums:
@@ -442,6 +447,17 @@ static NSString *SongCellIdentifier = @"SongCell";
      
 }
 
+- (void) updateDoneButton {
+    UIBarButtonItem * button = nil;
+    if(self.showsCancelButton) {
+        BOOL hasSelection = self.selectedItems.count > 0;
+        SEL action = hasSelection ? @selector(doneButtonTap:) : @selector(cancelButtonTap:);
+        UIBarButtonSystemItem buttonType = hasSelection ? UIBarButtonSystemItemDone : UIBarButtonSystemItemCancel;
+        button = [[UIBarButtonItem alloc] initWithBarButtonSystemItem: buttonType target:self action: action];
+    }
+    self.navigationItem.rightBarButtonItem = button;
+}
+
 
 - (void)notifyDelegateOfSelection:(MPMediaItemCollection *)mediaItems selectedItem:(MPMediaItem *)selectedItem {
 
@@ -453,9 +469,7 @@ static NSString *SongCellIdentifier = @"SongCell";
 
 #pragma mark - jgMediaQueryViewControllerDelegate callbacks
 - (void)jgMediaQueryViewController:(JGMediaQueryViewController *)mediaQueryViewController didPickMediaItems:(MPMediaItemCollection *)mediaItemCollection selectedItem:(MPMediaItem *)selectedItem {
-    if([self.delegate respondsToSelector:@selector(jgMediaQueryViewController:didPickMediaItems:selectedItem:)]) {
-        [self.delegate jgMediaQueryViewController:self didPickMediaItems:mediaItemCollection selectedItem:selectedItem];
-    }
+    [self notifyDelegateOfSelection:mediaItemCollection selectedItem:selectedItem];
 }
 
 - (void)jgMediaQueryViewControllerDidCancel:(JGMediaQueryViewController *)mediaPicker {
@@ -475,6 +489,10 @@ static NSString *SongCellIdentifier = @"SongCell";
     if ([self.delegate respondsToSelector: @selector(jgMediaQueryViewController:deselectItem:)]) {
         [self.delegate jgMediaQueryViewController: self deselectItem: item];
     }
+}
+
+- (NSArray*) selectedItems {
+    return [self.delegate respondsToSelector:@selector(selectedItems)] ? [self.delegate selectedItems] : nil;
 }
 
 #pragma mark - JGAlbumViewControllerDelegate callback
