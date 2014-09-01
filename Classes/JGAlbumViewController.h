@@ -32,5 +32,5 @@
 @optional
 
 - (void)jgAlbumViewController:(JGAlbumViewController *)albumViewController didPickMediaItems:(MPMediaItemCollection *)mediaItemCollection selectedItem:(MPMediaItem *)selectedItem;
-
+- (void) didFinishPickingSongs: (id) viewController;
 @end

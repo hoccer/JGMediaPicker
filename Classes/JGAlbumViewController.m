@@ -63,10 +63,8 @@
 {
     [super viewDidLoad];
     
-    if(self.showsCancelButton) {
-        self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel target:self.delegate action:@selector(notifyDelegateOfCancellation)];
-    }
-
+    [self updateDoneButton];
+    
     [[self tableView] setSeparatorColor:kSeparatorColor];
     
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(mediaLibraryDidChange:) name:MPMediaLibraryDidChangeNotification object:nil];
@@ -189,6 +187,22 @@
         [self configureCell: cell indexPath: indexPath];
         [self.tableView endUpdates];
     }
+    [self updateDoneButton];
 }
 
+
+- (void) updateDoneButton {
+    UIBarButtonItem * button = nil;
+    if(self.showsCancelButton) {
+        BOOL hasSelection = self.selectedItems.count > 0;
+        SEL action = hasSelection ? @selector(doneButtonTap:) : @selector(cancelButtonTap:);
+        UIBarButtonSystemItem buttonType = hasSelection ? UIBarButtonSystemItemDone : UIBarButtonSystemItemCancel;
+        button = [[UIBarButtonItem alloc] initWithBarButtonSystemItem: buttonType target: self.delegate action: action];
+    }
+    self.navigationItem.rightBarButtonItem = button;
+}
+
+- (NSArray*) selectedItems {
+    return [self.delegate selectedItems];
+}
 @end

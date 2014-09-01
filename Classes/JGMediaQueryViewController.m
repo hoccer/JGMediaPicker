@@ -141,7 +141,9 @@ static NSString *SongCellIdentifier = @"SongCell";
 }
 
 - (void) doneButtonTap: (id) sender {
-    NSLog(@"I'm done.");
+    if ([self.delegate respondsToSelector: @selector(didFinishPickingSongs:)]) {
+        [self.delegate didFinishPickingSongs: self];
+    }
 }
 
 - (void)mediaLibraryDidChange:(NSNotification *)notification {
@@ -158,10 +160,8 @@ static NSString *SongCellIdentifier = @"SongCell";
     [self.itemTableView registerClass:[JGMediaQueryTableViewCell class] forCellReuseIdentifier:AlbumCellIdentifier];
     [self.itemTableView registerClass:[JGMediaQueryTableViewCell class] forCellReuseIdentifier:SongCellIdentifier];
     
-    if(self.showsCancelButton) {
-        self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemCancel target:self action:@selector(cancelButtonTap:)];
-    }
-    
+    [self updateDoneButton];
+
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(mediaLibraryDidChange:) name:MPMediaLibraryDidChangeNotification object:nil];
     [[MPMediaLibrary defaultMediaLibrary] beginGeneratingLibraryChangeNotifications];
 }
@@ -258,7 +258,7 @@ static NSString *SongCellIdentifier = @"SongCell";
     if(self.queryType == JGMediaQueryTypeSongs) {
         cell.accessoryType = [self.delegate jgMediaQueryViewController: self isItemSelected: mediaItem] ? UITableViewCellAccessoryCheckmark : UITableViewCellAccessoryNone;
     }
-    
+
     switch (self.queryType) {
             
         case JGMediaQueryTypePlaylists: {
@@ -493,6 +493,12 @@ static NSString *SongCellIdentifier = @"SongCell";
 
 - (NSArray*) selectedItems {
     return [self.delegate respondsToSelector:@selector(selectedItems)] ? [self.delegate selectedItems] : nil;
+}
+
+- (void) didFinishPickingSongs: (JGMediaQueryViewController*) viewController {
+    if ([self.delegate respondsToSelector: @selector(didFinishPickingSongs:)]) {
+        [self.delegate didFinishPickingSongs: viewController];
+    }
 }
 
 #pragma mark - JGAlbumViewControllerDelegate callback
