@@ -310,12 +310,11 @@ static NSString *SongCellIdentifier = @"SongCell";
                     [cell setNeedsLayout];
                 }
             });
-            
-            if (!self.allowsSelectionOfNonPlayableItem && ![mediaItem jg_isPlayable]) {
-                cell.userInteractionEnabled = NO;
-                for (UILabel *label in [NSArray arrayWithObjects:[cell textLabel], [cell detailTextLabel], nil]) {
-                    label.textColor = [UIColor lightGrayColor];
-                }
+
+            BOOL isSelectable = self.allowsSelectionOfNonPlayableItem || [mediaItem jg_isPlayable];
+            cell.userInteractionEnabled = isSelectable;
+            for (UILabel *label in [NSArray arrayWithObjects:[cell textLabel], [cell detailTextLabel], nil]) {
+                label.textColor = isSelectable ? [UIColor blackColor] : [UIColor lightGrayColor];
             }
             
         }break;

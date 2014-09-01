@@ -154,10 +154,11 @@
     cell.trackNumberLabel.text = [NSString stringWithFormat:@"%d",[[mediaItem jg_trackNumber] intValue]];
     cell.trackNameLabel.text = [mediaItem jg_title];
     cell.trackLengthLabel.text = [mediaItem jg_trackLengthString];
-    if (!self.allowsSelectionOfNonPlayableItem && ![mediaItem jg_isPlayable]) {
-        cell.trackNameLabel.textColor = [UIColor lightGrayColor];
-        cell.userInteractionEnabled = NO;
-    }
+
+    BOOL isSelectable = self.allowsSelectionOfNonPlayableItem || [mediaItem jg_isPlayable];
+    cell.trackNameLabel.textColor = isSelectable ? [UIColor blackColor] : [UIColor lightGrayColor];
+    cell.userInteractionEnabled = isSelectable;
+
     //make odd rows gray    
     cell.backgroundView.backgroundColor = indexPath.row % 2 != 0 ? kGrayBackgroundColor : [UIColor whiteColor];
 
