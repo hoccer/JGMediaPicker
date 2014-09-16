@@ -110,7 +110,7 @@
 }
 
 - (void)tabBarController:(UITabBarController *)aTabBarController didSelectViewController:(UIViewController *)viewController {
-    self.selectedTabIndex = aTabBarController.selectedIndex;
+    self.selectedTabIndex = (JGMediaPickerTabIndex)aTabBarController.selectedIndex;
 }
 
 - (void)jgMediaQueryViewController:(JGMediaQueryViewController *)mediaQueryViewController didPickMediaItems:(MPMediaItemCollection *)mediaItemCollection selectedItem:(MPMediaItem *)selectedItem {
